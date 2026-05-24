@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { apiClient } from '@/api/client'
+import { checkHealth } from '@api/healthCheck'
 
 const API_BASE_URL = (import.meta.env['VITE_API_BASE_URL'] as string) ?? 'http://localhost:5046'
 const RETURN_KEY = 'healthcheck_return'
@@ -29,7 +29,7 @@ export function BackendRedirectPage({ backendPath }: Props) {
 
     const tryOnce = async () => {
       try {
-        await apiClient.get('/health', { timeout: 5000 })
+        await checkHealth()
         if (!cancelled.current) {
           window.location.href = `${API_BASE_URL}${backendPath}`
         }

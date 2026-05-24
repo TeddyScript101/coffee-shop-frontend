@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    {
+      "source": "/api/health",
+      "destination": "https://dotnetcoffeeshopbackend.onrender.com/health"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

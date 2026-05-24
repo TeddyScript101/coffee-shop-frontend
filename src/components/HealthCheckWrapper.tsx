@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { apiClient } from '@/api/client'
+import { checkHealth } from '@api/healthCheck'
 
 const WARMING_UP_PATH = '/warming-up'
 const RETURN_KEY = 'healthcheck_return'
@@ -17,7 +17,7 @@ export function HealthCheckWrapper({ children }: { children: React.ReactNode }) 
 
     const check = async () => {
       try {
-        await apiClient.get('/health', { timeout: 5000 })
+        await checkHealth()
       } catch {
         // Backend is sleeping — save where user was going and redirect
         sessionStorage.setItem(RETURN_KEY, location.pathname + location.search)

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { apiClient } from '@/api/client'
+import { checkHealth } from '@api/healthCheck'
 
 const RETURN_KEY = 'healthcheck_return'
 const POLL_INTERVAL_MS = 3000
@@ -30,7 +30,7 @@ export function WarmingUpPage() {
   const tryRedirect = useCallback(async () => {
     setIsRetrying(true)
     try {
-      await apiClient.get('/health', { timeout: 5000 })
+      await checkHealth()
       const returnTo = sessionStorage.getItem(RETURN_KEY) ?? '/'
       sessionStorage.removeItem(RETURN_KEY)
 

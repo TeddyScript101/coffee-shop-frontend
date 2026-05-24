@@ -8,6 +8,16 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  server: {
+    proxy: {
+      // Mirror the Vercel rewrite so /api/health works the same in local dev
+      '/api/health': {
+        target: 'http://localhost:5046',
+        changeOrigin: true,
+        rewrite: () => '/health',
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
