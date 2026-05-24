@@ -29,8 +29,10 @@ function AnimatedTitle({ text }: { text: string }) {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface VideoHeroSectionProps {
-  /** Path to the self-hosted video file (relative to /public). */
+  /** Path to the desktop video file (relative to /public). */
   videoSrc: string
+  /** Optional vertical video for mobile (max-width: 767px). */
+  mobileVideoSrc?: string
   title: string
   subtitle: string
   ctaPrimary: { label: string; to: string }
@@ -41,6 +43,7 @@ interface VideoHeroSectionProps {
 
 export function VideoHeroSection({
   videoSrc,
+  mobileVideoSrc,
   title,
   subtitle,
   ctaPrimary,
@@ -74,7 +77,6 @@ export function VideoHeroSection({
           muted
           loop
           playsInline
-          src={videoSrc}
           style={{
             position: 'absolute',
             top: '50%',
@@ -84,7 +86,14 @@ export function VideoHeroSection({
             height: 'max(135vh, calc(135vw * 9 / 16))',
             objectFit: 'cover',
           }}
-        />
+        >
+          {/* Mobile: vertical video shown on screens ≤ 767px */}
+          {mobileVideoSrc && (
+            <source src={mobileVideoSrc} media="(max-width: 767px)" type="video/mp4" />
+          )}
+          {/* Desktop: landscape video */}
+          <source src={videoSrc} type="video/mp4" />
+        </video>
       </motion.div>
 
       {/* Gradient overlay */}

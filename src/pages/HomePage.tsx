@@ -75,6 +75,7 @@ export function HomePage() {
     <PageLayout>
       <VideoHeroSection
         videoSrc="/hero.mp4"
+        mobileVideoSrc="/video_vertical_compressed.mp4"
         title="Coffee Roasted at Peak."
         subtitle="Single-origin beans and signature blends from the world's finest growing regions. Every cup tells a story of place and craft."
         ctaPrimary={{ label: 'Shop Coffee', to: '/coffee' }}
