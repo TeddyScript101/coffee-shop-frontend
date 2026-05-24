@@ -10,12 +10,15 @@ import { RegisterPage } from '@pages/RegisterPage'
 import { MembershipDashboardPage } from '@pages/MembershipDashboardPage'
 import { AdminProductsPage } from '@pages/admin/AdminProductsPage'
 import { WarmingUpPage } from '@pages/WarmingUpPage'
+import { BackendRedirectPage } from '@pages/BackendRedirectPage'
 
 export function AppRoutes() {
   return (
     <HealthCheckWrapper>
       <Routes>
         <Route path="/warming-up" element={<WarmingUpPage />} />
+        <Route path="/swagger" element={<BackendRedirectPage backendPath="/swagger" />} />
+        <Route path="/scalar"  element={<BackendRedirectPage backendPath="/scalar"  />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/coffee" element={<CoffeeListPage />} />
         <Route path="/equipment" element={<EquipmentListPage />} />

@@ -13,6 +13,14 @@ const STATUS_MESSAGES = [
   'Almost ready…',
 ]
 
+const API_BASE_URL = (import.meta.env['VITE_API_BASE_URL'] as string) ?? 'http://localhost:5046'
+
+// Frontend paths that should redirect to the backend instead of the React app
+const BACKEND_REDIRECT_MAP: Record<string, string> = {
+  '/swagger': `${API_BASE_URL}/swagger`,
+  '/scalar':  `${API_BASE_URL}/scalar`,
+}
+
 export function WarmingUpPage() {
   const navigate = useNavigate()
   const [elapsed, setElapsed] = useState(0)
@@ -25,7 +33,13 @@ export function WarmingUpPage() {
       await apiClient.get('/health', { timeout: 5000 })
       const returnTo = sessionStorage.getItem(RETURN_KEY) ?? '/'
       sessionStorage.removeItem(RETURN_KEY)
-      navigate(returnTo, { replace: true })
+
+      const backendUrl = BACKEND_REDIRECT_MAP[returnTo]
+      if (backendUrl) {
+        window.location.href = backendUrl
+      } else {
+        navigate(returnTo, { replace: true })
+      }
     } catch {
       setIsRetrying(false)
     }
@@ -33,7 +47,6 @@ export function WarmingUpPage() {
 
   // Poll every 3 seconds
   useEffect(() => {
-    // Try immediately on mount
     tryRedirect()
     const interval = setInterval(tryRedirect, POLL_INTERVAL_MS)
     return () => clearInterval(interval)
