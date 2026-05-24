@@ -96,10 +96,10 @@ export function VideoHeroSection({
         </video>
       </motion.div>
 
-      {/* Gradient overlay */}
+      {/* Gradient overlay — desktop */}
       <div
         aria-hidden
-        className="absolute inset-0 z-[3] pointer-events-none"
+        className="absolute inset-0 z-[3] pointer-events-none hidden sm:block"
         style={{
           background: [
             'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.55) 100%)',
@@ -108,19 +108,31 @@ export function VideoHeroSection({
         }}
       />
 
+      {/* Gradient overlay — mobile: stronger fade at bottom so text is readable */}
+      <div
+        aria-hidden
+        className="absolute inset-0 z-[3] pointer-events-none sm:hidden"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.75) 100%)',
+        }}
+      />
+
       {/* Hero text */}
       <motion.div
         style={{ y: textY, opacity: textOpacity }}
-        className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center"
+        className="relative z-10 flex flex-col items-center min-h-screen px-4 text-center
+                   justify-end pb-20
+                   sm:justify-center sm:pb-0"
       >
         <div className="max-w-3xl mx-auto">
           <AnimatedTitle text={title} />
 
+          {/* Subtitle hidden on mobile — too long and blocks the video */}
           <motion.p
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-white/80 text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto"
+            className="hidden sm:block text-white/80 text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto"
             style={{ textShadow: '0 1px 12px rgba(0,0,0,0.5)' }}
           >
             {subtitle}
@@ -130,7 +142,7 @@ export function VideoHeroSection({
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.72, duration: 0.65, ease: [0.25, 0.1, 0.25, 1] }}
-            className="flex flex-wrap gap-3 justify-center"
+            className="flex flex-wrap gap-3 justify-center mt-4 sm:mt-0"
           >
             <Link to={ctaPrimary.to}>
               <Button size="lg">{ctaPrimary.label}</Button>
