@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { PageLayout } from '@components/layout/PageLayout'
 import { RoastBadge } from '@components/products/RoastBadge/RoastBadge'
 import { TastingNotes } from '@components/products/TastingNotes/TastingNotes'
+import { TasteNoteImage } from '@components/products/CoffeeBeanCard/TasteNoteImage'
 import { ProductDetailSkeleton } from '@components/feedback/LoadingSkeleton/LoadingSkeleton'
 import { ErrorState } from '@components/feedback/ErrorState/ErrorState'
 import { Button } from '@ds/components/Button/Button'
@@ -56,15 +57,21 @@ export function ProductDetailPage() {
         {product && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <div className="relative aspect-square rounded-3xl overflow-hidden bg-[var(--color-surface-elevated)] shadow-[var(--shadow-soft-md)]">
-              {product.imageUrl && (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className={`w-full h-full object-cover transition-opacity duration-[350ms] ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                  onLoad={() => setImageLoaded(true)}
-                />
+              {isCoffeeBean(product) ? (
+                <TasteNoteImage bean={product} />
+              ) : (
+                <>
+                  {product.imageUrl && (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className={`w-full h-full object-cover transition-opacity duration-[350ms] ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                      onLoad={() => setImageLoaded(true)}
+                    />
+                  )}
+                  {!imageLoaded && <div className="absolute inset-0 skeleton-shimmer" />}
+                </>
               )}
-              {!imageLoaded && <div className="absolute inset-0 skeleton-shimmer" />}
             </div>
 
             <div className="flex flex-col gap-5">

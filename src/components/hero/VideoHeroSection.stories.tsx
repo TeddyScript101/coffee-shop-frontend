@@ -15,7 +15,7 @@ type Story = StoryObj<typeof VideoHeroSection>
 
 export const Default: Story = {
   args: {
-    youtubeId: 'Z6Dx-o3vfJY',
+    videoSrc: '/hero.mp4',
     title: 'Experience The Process.',
     subtitle: 'From bean to cup, every step is a testament to our dedication to quality and flavor.',
     ctaPrimary: { label: 'Shop Coffee', to: '/coffee' },

@@ -61,7 +61,7 @@ export function Navbar() {
                 : 'text-[var(--color-text)] hover:text-[var(--color-primary)]',
             )}
           >
-            Cheeky Ember
+            BeanWorks
           </Link>
 
           {/* Desktop nav links */}

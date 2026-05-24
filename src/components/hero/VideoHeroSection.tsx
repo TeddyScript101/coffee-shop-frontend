@@ -3,15 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Button } from '@ds/components/Button/Button'
 
-interface VideoHeroSectionProps {
-  youtubeId: string
-  /** Cut the video this many seconds before its natural end to avoid YouTube end-screen overlays */
-  endSeconds?: number
-  title: string
-  subtitle: string
-  ctaPrimary: { label: string; to: string }
-  ctaSecondary?: { label: string; to: string }
-}
+// ── AnimatedTitle ─────────────────────────────────────────────────────────────
 
 function AnimatedTitle({ text }: { text: string }) {
   return (
@@ -34,47 +26,41 @@ function AnimatedTitle({ text }: { text: string }) {
   )
 }
 
+// ── Props ─────────────────────────────────────────────────────────────────────
+
+interface VideoHeroSectionProps {
+  /** Path to the self-hosted video file (relative to /public). */
+  videoSrc: string
+  title: string
+  subtitle: string
+  ctaPrimary: { label: string; to: string }
+  ctaSecondary?: { label: string; to: string }
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export function VideoHeroSection({
-  youtubeId,
-  endSeconds,
+  videoSrc,
   title,
   subtitle,
   ctaPrimary,
   ctaSecondary,
 }: VideoHeroSectionProps) {
-  const ref = useRef<HTMLElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
 
+  // Scroll-driven parallax
   const { scrollYProgress } = useScroll({
-    target: ref,
+    target: sectionRef,
     offset: ['start start', 'end start'],
   })
-
   const videoScaleRaw = useTransform(scrollYProgress, [0, 1], [1.06, 1.18])
   const videoScale = useSpring(videoScaleRaw, { stiffness: 60, damping: 20 })
-
   const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-18%'])
   const textOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0])
 
-  const params = new URLSearchParams({
-    autoplay: '1',
-    mute: '1',
-    loop: '1',
-    controls: '0',
-    playlist: youtubeId,
-    playsinline: '1',
-    disablekb: '1',
-    rel: '0',
-    iv_load_policy: '3',
-    start: '0',
-    ...(endSeconds !== undefined ? { end: String(endSeconds) } : {}),
-  })
-  const embedSrc = `https://www.youtube-nocookie.com/embed/${youtubeId}?${params.toString()}`
-
   return (
     <section
-      ref={ref}
-      // -mt-16 pulls the section under the fixed navbar so the transparent
-      // glass sits over the video, not the body background below the nav.
+      ref={sectionRef}
       className="relative overflow-hidden min-h-screen -mt-16"
     >
       {/* Video layer */}
@@ -83,11 +69,12 @@ export function VideoHeroSection({
         className="absolute inset-0 pointer-events-none"
         style={{ scale: videoScale }}
       >
-        <iframe
-          src={embedSrc}
-          allow="autoplay; encrypted-media"
-          // pointer-events: none prevents accidental interaction with the
-          // YouTube player iframe in case the parent event is ever enabled.
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          src={videoSrc}
           style={{
             position: 'absolute',
             top: '50%',
@@ -95,23 +82,12 @@ export function VideoHeroSection({
             transform: 'translate(-50%, -50%)',
             width: 'max(135vw, calc(135vh * 16 / 9))',
             height: 'max(135vh, calc(135vw * 9 / 16))',
-            border: 'none',
-            pointerEvents: 'none',
+            objectFit: 'cover',
           }}
-          title="hero background video"
         />
       </motion.div>
 
-      {/* Loading mask: hides YouTube thumbnail/UI while the video initialises */}
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 z-[2] bg-[var(--color-brand-charcoal)] pointer-events-none"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ delay: 2.5, duration: 1.0, ease: 'easeOut' }}
-      />
-
-      {/* Gradient overlay: dark top & bottom, lighter mid */}
+      {/* Gradient overlay */}
       <div
         aria-hidden
         className="absolute inset-0 z-[3] pointer-events-none"
@@ -123,7 +99,7 @@ export function VideoHeroSection({
         }}
       />
 
-      {/* Text content */}
+      {/* Hero text */}
       <motion.div
         style={{ y: textY, opacity: textOpacity }}
         className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center"

@@ -32,12 +32,12 @@ export function CoffeeListPage() {
   return (
     <PageLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="font-[var(--font-serif)] text-[var(--text-display-lg)] text-[var(--color-text)] mb-2">
+        <div className="mb-8 text-center sm:text-left">
+          <h1 className="font-[var(--font-serif)] text-4xl md:text-5xl font-bold tracking-tight text-[var(--color-text)] mb-2">
             Coffee Beans
           </h1>
-          <p className="text-[var(--color-text-muted)]">
-            Single-origin selections, roasted to order.
+          <p className="text-[var(--color-text-muted)] max-w-2xl">
+            Premium single-origins and signature blends, roasted to order.
           </p>
         </div>
 

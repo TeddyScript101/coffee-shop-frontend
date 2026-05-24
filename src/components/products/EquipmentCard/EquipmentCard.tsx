@@ -35,7 +35,7 @@ export function EquipmentCard({ equipment, className }: EquipmentCardProps) {
   return (
     <Card
       interactive
-      className={cn('group flex flex-col', className)}
+      className={cn('group flex flex-col w-full max-w-[320px] mx-auto', className)}
     >
       <Link to={`/product/${equipment.id}`} className="flex flex-col flex-1">
         <div className="relative aspect-square overflow-hidden bg-[var(--color-surface-elevated)]">

@@ -9,10 +9,10 @@ const sampleEquipment: EquipmentDto = {
   sku: 'EQ-001',
   price: 220.0,
   stockQuantity: 15,
-  imageUrl: 'https://picsum.photos/seed/grinder1/400/400',
+  imageUrl: '/images/equipment/grinder.png',
   productType: 'Equipment',
   createdAt: '2025-01-01',
-  brand: 'Comandante',
+  brand: 'BeanWorks',
   equipmentType: 'Grinder',
 }
 
@@ -37,11 +37,11 @@ export const Machine: Story = {
     equipment: {
       ...sampleEquipment,
       id: '11',
-      name: 'Decent DE1PRO',
-      brand: 'Decent Espresso',
+      name: 'Bambino Plus Espresso',
+      brand: 'BeanWorks',
       equipmentType: 'Machine',
-      price: 2999.0,
-      imageUrl: 'https://picsum.photos/seed/machine1/400/400',
+      price: 499.0,
+      imageUrl: '/images/equipment/machine.png',
     },
   },
   decorators: [(Story) => <div className="w-72"><Story /></div>],

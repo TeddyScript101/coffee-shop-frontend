@@ -1,10 +1,11 @@
-import { useRef } from 'react'
+
 import { Link } from 'react-router-dom'
-import { motion, useScroll, useTransform, type Variants } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 
 const EASE: [number, number, number, number] = [0.25, 0.1, 0.25, 1]
 import { PageLayout } from '@components/layout/PageLayout'
 import { VideoHeroSection } from '@components/hero/VideoHeroSection'
+import { PhilosophyBand } from '@components/home/PhilosophyBand'
 import { CoffeeBeanCard } from '@components/products/CoffeeBeanCard/CoffeeBeanCard'
 import { EquipmentCard } from '@components/products/EquipmentCard/EquipmentCard'
 import { ProductCardSkeleton } from '@components/feedback/LoadingSkeleton/LoadingSkeleton'
@@ -43,7 +44,7 @@ function SectionHeader({
         whileInView={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
         viewport={{ once: true }}
-        className="font-[var(--font-serif)] text-[var(--text-display)] text-[var(--color-text)]"
+        className="font-[var(--font-serif)] text-3xl md:text-4xl font-bold tracking-tight text-[var(--color-text)]"
       >
         {title}
       </motion.h2>
@@ -61,70 +62,7 @@ function SectionHeader({
   )
 }
 
-function PhilosophyBand() {
-  const ref = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const bgTextY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%'])
 
-  return (
-    <section ref={ref} className="relative overflow-hidden bg-[var(--color-brand-charcoal)]">
-      {/* Huge ghost text in the background */}
-      <motion.div
-        aria-hidden
-        style={{ y: bgTextY }}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-      >
-        <span
-          className="text-white font-[var(--font-serif)] whitespace-nowrap opacity-[0.035]"
-          style={{ fontSize: 'clamp(90px, 18vw, 220px)' }}
-        >
-          COFFEE
-        </span>
-      </motion.div>
-
-
-
-      <div className="relative py-32 px-4 sm:px-6 lg:px-8 text-center max-w-3xl mx-auto">
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          transition={{ duration: 0.75, ease: [0.25, 0.1, 0.25, 1] }}
-          viewport={{ once: true }}
-          className="h-px w-20 bg-[var(--color-primary)] mx-auto mb-12 origin-left"
-        />
-
-        <motion.p
-          initial={{ opacity: 0, y: 64 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
-          viewport={{ once: true }}
-          className="text-[var(--color-brand-warm-white)] font-[var(--font-serif)] text-4xl md:text-5xl leading-[1.2] tracking-[-0.02em]"
-        >
-          Sourced. Roasted.<br />Delivered.
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, delay: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-          viewport={{ once: true }}
-          className="mt-6 text-[var(--color-brand-sage)] text-lg leading-relaxed"
-        >
-          We partner directly with smallholder farms across 12 origins. Every roast is done
-          in small batches and ships within 48 hours of leaving the drum.
-        </motion.p>
-
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          transition={{ duration: 0.75, delay: 0.38, ease: [0.25, 0.1, 0.25, 1] }}
-          viewport={{ once: true }}
-          className="h-px w-20 bg-[var(--color-primary)] mx-auto mt-12 origin-right"
-        />
-      </div>
-    </section>
-  )
-}
 
 export function HomePage() {
   const { data: beans, isLoading: beansLoading } = useCoffeeBeans()
@@ -136,10 +74,9 @@ export function HomePage() {
   return (
     <PageLayout>
       <VideoHeroSection
-        youtubeId="Z6Dx-o3vfJY"
-        endSeconds={59}
+        videoSrc="/hero.mp4"
         title="Coffee Roasted at Peak."
-        subtitle="Single-origin beans from the world's finest growing regions. Every cup tells a story of place and craft."
+        subtitle="Single-origin beans and signature blends from the world's finest growing regions. Every cup tells a story of place and craft."
         ctaPrimary={{ label: 'Shop Coffee', to: '/coffee' }}
         ctaSecondary={{ label: 'Shop Equipment', to: '/equipment' }}
       />

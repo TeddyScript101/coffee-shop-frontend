@@ -36,7 +36,7 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="font-[var(--font-serif)] text-2xl text-[var(--color-text)]">
-            Cheeky Ember
+            BeanWorks
           </Link>
           <h1 className="font-[var(--font-serif)] text-[var(--text-display)] text-[var(--color-text)] mt-6 mb-2">
             Welcome back

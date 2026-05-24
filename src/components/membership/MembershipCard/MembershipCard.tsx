@@ -24,7 +24,7 @@ export function MembershipCard({ membership, memberName, className }: Membership
       <div className="flex items-start justify-between mb-6">
         <div>
           <p className="text-xs font-medium text-[var(--color-text-subtle)] uppercase tracking-widest mb-1">
-            Cheeky Ember
+            BeanWorks
           </p>
           <p className="text-sm text-[var(--color-text-muted)]">Member Card</p>
         </div>

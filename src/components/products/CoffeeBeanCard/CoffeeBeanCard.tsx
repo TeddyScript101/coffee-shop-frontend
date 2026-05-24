@@ -1,10 +1,10 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '@ds/components/Card/Card'
 import { Button } from '@ds/components/Button/Button'
 import { Badge } from '@ds/components/Badge/Badge'
 import { RoastBadge } from '../RoastBadge/RoastBadge'
 import { TastingNotes } from '../TastingNotes/TastingNotes'
+import { TasteNoteImage } from './TasteNoteImage'
 import { useCartStore } from '@store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
 import type { CoffeeBeanDto } from '@/types/api'
@@ -16,7 +16,6 @@ interface CoffeeBeanCardProps {
 }
 
 export function CoffeeBeanCard({ bean, className }: CoffeeBeanCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false)
   const addItem = useCartStore((s) => s.addItem)
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -37,26 +36,14 @@ export function CoffeeBeanCard({ bean, className }: CoffeeBeanCardProps) {
   return (
     <Card
       interactive
-      className={cn('group flex flex-col', className)}
+      className={cn('group flex flex-col w-full max-w-[320px] mx-auto', className)}
     >
       <Link to={`/product/${bean.id}`} className="flex flex-col flex-1">
         <div className="relative aspect-square overflow-hidden bg-[var(--color-surface-elevated)]">
-          {bean.imageUrl && (
-            <img
-              src={bean.imageUrl}
-              alt={bean.name}
-              loading="lazy"
-              onLoad={() => setImageLoaded(true)}
-              className={cn(
-                'w-full h-full object-cover transition-all duration-[350ms]',
-                'group-hover:scale-[1.03]',
-                imageLoaded ? 'opacity-100' : 'opacity-0',
-              )}
-            />
-          )}
-          {!imageLoaded && (
-            <div className="absolute inset-0 skeleton-shimmer" />
-          )}
+          <TasteNoteImage 
+            bean={bean} 
+            className="transition-transform duration-[350ms] group-hover:scale-[1.03]" 
+          />
           <div className="absolute top-3 left-3">
             <RoastBadge roastLevel={bean.roastLevel} />
           </div>
