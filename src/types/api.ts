@@ -57,3 +57,94 @@ export interface ApiError {
   message: string
   errors?: Record<string, string[]>
 }
+
+// ---- Account ----
+
+export interface UserProfileDto {
+  email: string
+  firstName: string | null
+  lastName: string | null
+  phone: string | null
+  billingFirstName: string | null
+  billingLastName: string | null
+  billingAddress: string | null
+  billingCity: string | null
+  billingState: string | null
+  billingPostalCode: string | null
+  billingCountry: string | null
+}
+
+export interface UpdateProfileRequest {
+  phone?: string
+  billingFirstName?: string
+  billingLastName?: string
+  billingAddress?: string
+  billingCity?: string
+  billingState?: string
+  billingPostalCode?: string
+  billingCountry?: string
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}
+
+// ---- Orders ----
+
+export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
+export type PaymentStatus = 'Pending' | 'Paid' | 'Failed' | 'Refunded'
+
+export interface OrderItemDto {
+  id: string
+  productId: string
+  productName: string
+  productSku: string
+  productImageUrl: string | null
+  productType: string
+  unitPrice: number
+  quantity: number
+  lineTotal: number
+}
+
+export interface ShippingAddressDto {
+  firstName: string
+  lastName: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+}
+
+export interface OrderDto {
+  id: string
+  items: OrderItemDto[]
+  shippingAddress: ShippingAddressDto
+  cardLastFour: string
+  paymentStatus: PaymentStatus
+  status: OrderStatus
+  subtotal: number
+  shippingCost: number
+  total: number
+  createdAt: string
+}
+
+export interface CreateOrderRequest {
+  items: { productId: string; quantity: number }[]
+  shippingAddress: {
+    firstName: string
+    lastName: string
+    address: string
+    city: string
+    state: string
+    postalCode: string
+    country: string
+  }
+  payment: {
+    cardNumber: string
+    cardExpiry: string
+    cardCvc: string
+    cardholderName: string
+  }
+}

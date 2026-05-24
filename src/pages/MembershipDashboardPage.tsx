@@ -39,7 +39,7 @@ export function MembershipDashboardPage() {
     <PageLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h1 className="font-[var(--font-serif)] text-[var(--text-display-lg)] text-[var(--color-text)] mb-1">
+          <h1 className="font-[var(--font-serif)] text-[var(--text-display-xl)] text-[var(--color-text)] mb-1">
             Your Membership
           </h1>
           <p className="text-[var(--color-text-muted)]">

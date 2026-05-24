@@ -24,6 +24,7 @@ export function ProductDetailPage() {
   const { data: product, isLoading, isError, refetch } = useProduct(id ?? '')
   const [quantity, setQuantity] = useState(1)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [addedFeedback, setAddedFeedback] = useState(false)
   const addItem = useCartStore((s) => s.addItem)
 
   const handleAddToCart = () => {
@@ -36,6 +37,8 @@ export function ProductDetailPage() {
       imageUrl: product.imageUrl,
       productType: product.productType,
     })
+    setAddedFeedback(true)
+    setTimeout(() => setAddedFeedback(false), 1800)
   }
 
   return (
@@ -150,11 +153,15 @@ export function ProductDetailPage() {
                 </div>
                 <Button
                   onClick={handleAddToCart}
-                  disabled={product.stockQuantity === 0}
+                  disabled={product.stockQuantity === 0 || addedFeedback}
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 transition-all duration-200"
                 >
-                  {product.stockQuantity === 0 ? 'Sold Out' : 'Add to Cart'}
+                  {product.stockQuantity === 0
+                    ? 'Sold Out'
+                    : addedFeedback
+                      ? '✓ Added!'
+                      : 'Add to Cart'}
                 </Button>
               </div>
 

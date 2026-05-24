@@ -11,6 +11,10 @@ import { MembershipDashboardPage } from '@pages/MembershipDashboardPage'
 import { AdminProductsPage } from '@pages/admin/AdminProductsPage'
 import { WarmingUpPage } from '@pages/WarmingUpPage'
 import { BackendRedirectPage } from '@pages/BackendRedirectPage'
+import { CartPage } from '@pages/CartPage'
+import { CheckoutPage } from '@pages/CheckoutPage'
+import { OrderConfirmationPage } from '@pages/OrderConfirmationPage'
+import { AccountPage } from '@pages/AccountPage'
 
 export function AppRoutes() {
   return (
@@ -25,6 +29,31 @@ export function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute>
+              <CheckoutPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/order-confirmation/:id"
+          element={
+            <PrivateRoute>
+              <OrderConfirmationPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <PrivateRoute>
+              <AccountPage />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/membership"
           element={
