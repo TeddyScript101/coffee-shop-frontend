@@ -8,8 +8,8 @@ import { Button } from '@ds/components/Button/Button'
 function AnimatedTitle({ text }: { text: string }) {
   return (
     <h1
-      className="font-[var(--font-serif)] text-white leading-[1.1] tracking-[-0.02em] mb-6"
-      style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', textShadow: '0 2px 24px rgba(0,0,0,0.4)' }}
+      className="font-[var(--font-serif)] text-white leading-[1.1] tracking-[-0.02em] mb-6 text-[1.35rem] sm:text-4xl md:text-5xl xl:text-[4.5rem]"
+      style={{ textShadow: '0 2px 24px rgba(0,0,0,0.4)' }}
     >
       {text.split(' ').map((word, i) => (
         <motion.span
