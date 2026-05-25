@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { PageLayout } from '@components/layout/PageLayout'
 import { MembershipCard } from '@components/membership/MembershipCard/MembershipCard'
 import { TierBadge } from '@components/membership/TierBadge/TierBadge'
 import { useAuthStore } from '@store/authStore'
-import type { MembershipTier } from '@/types/api'
+import { getProfile } from '@/api/account'
+import type { MembershipTier, UserProfileDto } from '@/types/api'
 
 const tierBenefits: Record<MembershipTier, string[]> = {
   Bronze: ['5% off all orders', 'Early access to new arrivals', 'Birthday surprise'],
@@ -23,17 +25,35 @@ const tierThresholds: Record<MembershipTier, number> = {
 
 export function MembershipDashboardPage() {
   const { user } = useAuthStore()
+  const [profile, setProfile] = useState<UserProfileDto | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const mockMembership = {
-    id: 'mock-1',
-    points: 480,
-    tier: 'Bronze' as MembershipTier,
-    joinedAt: new Date().toISOString(),
+  useEffect(() => {
+    getProfile()
+      .then(setProfile)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <p className="text-[var(--color-text-muted)]">Loading...</p>
+        </div>
+      </PageLayout>
+    )
   }
 
-  const currentTier = mockMembership.tier
+  const membership = {
+    id: 'membership',
+    points: profile?.points ?? 0,
+    tier: (profile?.tier ?? 'Bronze') as MembershipTier,
+    joinedAt: profile?.memberSince ?? new Date().toISOString(),
+  }
+
+  const currentTier = membership.tier
   const next = nextTier[currentTier]
-  const pointsToNext = next ? tierThresholds[next] - mockMembership.points : null
+  const pointsToNext = next ? tierThresholds[next] - membership.points : null
 
   return (
     <PageLayout>
@@ -49,7 +69,7 @@ export function MembershipDashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <MembershipCard
-            membership={mockMembership}
+            membership={membership}
             memberName={user?.firstName ?? 'Member'}
           />
 
@@ -63,7 +83,7 @@ export function MembershipDashboardPage() {
                   <div
                     className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-[350ms]"
                     style={{
-                      width: `${Math.min(100, ((mockMembership.points - tierThresholds[currentTier]) / (tierThresholds[next] - tierThresholds[currentTier])) * 100)}%`,
+                      width: `${Math.min(100, ((membership.points - tierThresholds[currentTier]) / (tierThresholds[next] - tierThresholds[currentTier])) * 100)}%`,
                     }}
                   />
                 </div>

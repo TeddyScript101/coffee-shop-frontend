@@ -72,6 +72,10 @@ export interface UserProfileDto {
   billingState: string | null
   billingPostalCode: string | null
   billingCountry: string | null
+  // Membership / loyalty info
+  points: number
+  tier: MembershipTier
+  memberSince: string | null
 }
 
 export interface UpdateProfileRequest {
