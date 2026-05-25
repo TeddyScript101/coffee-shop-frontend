@@ -36,7 +36,7 @@ export function CoffeeBeanCard({ bean, className }: CoffeeBeanCardProps) {
   return (
     <Card
       interactive
-      className={cn('group flex flex-col w-full max-w-[320px] mx-auto', className)}
+      className={cn('group flex flex-col w-full max-w-[320px] mx-auto h-full', className)}
     >
       <Link to={`/product/${bean.id}`} className="flex flex-col flex-1">
         <div className="relative aspect-square overflow-hidden bg-[var(--color-surface-elevated)]">
