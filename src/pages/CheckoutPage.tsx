@@ -185,6 +185,34 @@ export function CheckoutPage() {
     }).catch(() => {})
   }, [])
 
+  // Hidden dev hotkey: Shift+Alt+F — fills the entire form with test data
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.shiftKey && e.altKey && e.key === 'F') {
+        setShipping({
+          firstName: 'Teddy',
+          lastName: 'Yee',
+          address: 'Box Hill',
+          city: 'Box Hill',
+          state: 'VIC',
+          postalCode: '3129',
+          country: 'Australia',
+        })
+        setPayment({
+          cardholderName: 'TEDDY YEE',
+          cardNumber: '1234 5678 9012 3456',
+          cardExpiry: '08/34',
+          cardCvc: '123',
+        })
+        setShippingErrors({})
+        setPaymentErrors({})
+        setStep(0)
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
+
   if (items.length === 0) {
     return (
       <PageLayout>
