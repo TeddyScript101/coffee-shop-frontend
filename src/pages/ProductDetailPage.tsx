@@ -61,7 +61,11 @@ export function ProductDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <div className="relative aspect-square rounded-3xl overflow-hidden bg-[var(--color-surface-elevated)] shadow-[var(--shadow-soft-md)]">
               {isCoffeeBean(product) ? (
-                <TasteNoteImage bean={product} />
+                <TasteNoteImage
+                  originCountry={product.originCountry}
+                  originRegion={product.originRegion}
+                  tastingNotes={product.tastingNotes}
+                />
               ) : (
                 <>
                   {product.imageUrl && (
