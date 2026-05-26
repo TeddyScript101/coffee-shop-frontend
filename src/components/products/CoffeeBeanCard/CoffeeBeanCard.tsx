@@ -27,6 +27,9 @@ export function CoffeeBeanCard({ bean, className }: CoffeeBeanCardProps) {
       quantity: 1,
       imageUrl: bean.imageUrl,
       productType: 'CoffeeBean',
+      originCountry: bean.originCountry,
+      originRegion: bean.originRegion,
+      tastingNotes: bean.tastingNotes,
     })
   }
 
@@ -40,9 +43,11 @@ export function CoffeeBeanCard({ bean, className }: CoffeeBeanCardProps) {
     >
       <Link to={`/product/${bean.id}`} className="flex flex-col flex-1">
         <div className="relative aspect-square overflow-hidden bg-[var(--color-surface-elevated)]">
-          <TasteNoteImage 
-            bean={bean} 
-            className="transition-transform duration-[350ms] group-hover:scale-[1.03]" 
+          <TasteNoteImage
+            originCountry={bean.originCountry}
+            originRegion={bean.originRegion}
+            tastingNotes={bean.tastingNotes}
+            className="transition-transform duration-[350ms] group-hover:scale-[1.03]"
           />
           <div className="absolute top-3 left-3">
             <RoastBadge roastLevel={bean.roastLevel} />

@@ -4,6 +4,7 @@ import { Button } from '@ds/components/Button/Button'
 import { useCartStore, cartTotal, cartItemCount } from '@store/cartStore'
 import { useAuthStore } from '@store/authStore'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { TasteNoteImage } from '@components/products/CoffeeBeanCard/TasteNoteImage'
 
 export function CartPage() {
   const { items, removeItem, updateQuantity } = useCartStore()
@@ -66,7 +67,14 @@ export function CartPage() {
                 >
                   {/* Thumbnail */}
                   <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-[var(--color-surface-elevated)] flex items-center justify-center">
-                    {item.imageUrl ? (
+                    {item.productType === 'CoffeeBean' && item.originCountry && item.tastingNotes ? (
+                      <TasteNoteImage
+                        originCountry={item.originCountry}
+                        originRegion={item.originRegion ?? ''}
+                        tastingNotes={item.tastingNotes}
+                        className="w-full h-full"
+                      />
+                    ) : item.imageUrl ? (
                       <img
                         src={item.imageUrl}
                         alt={item.name}

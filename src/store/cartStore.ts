@@ -9,6 +9,10 @@ export interface CartItem {
   quantity: number
   imageUrl: string | null
   productType: ProductType
+  // Coffee bean specific fields (for TasteNoteImage in cart)
+  originCountry?: string
+  originRegion?: string
+  tastingNotes?: string
 }
 
 interface CartState {

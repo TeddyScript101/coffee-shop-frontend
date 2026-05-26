@@ -1,8 +1,9 @@
-import type { CoffeeBeanDto } from '@/types/api'
 import { cn } from '@/utils/cn'
 
 interface TasteNoteImageProps {
-  bean: CoffeeBeanDto
+  originCountry: string
+  originRegion: string
+  tastingNotes: string
   className?: string
 }
 
@@ -25,21 +26,21 @@ function getColorTheme(country: string) {
   return 'bg-[var(--color-primary)] text-white'
 }
 
-export function TasteNoteImage({ bean, className }: TasteNoteImageProps) {
-  const colorTheme = getColorTheme(bean.originCountry)
-  
+export function TasteNoteImage({ originCountry, originRegion, tastingNotes, className }: TasteNoteImageProps) {
+  const colorTheme = getColorTheme(originCountry)
+
   // Split notes by comma for layout
-  const notes = bean.tastingNotes.split(',').map((n) => n.trim().toUpperCase())
+  const notes = tastingNotes.split(',').map((n) => n.trim().toUpperCase())
 
   return (
     <div className={cn('w-full h-full flex flex-col bg-[#F9F9F9] shadow-inner font-sans', className)}>
       {/* Top Banner */}
       <div className={cn('flex flex-col items-center justify-center pt-6 pb-2 px-2', colorTheme)}>
         <h4 className="font-bold text-base tracking-widest uppercase leading-tight">
-          {bean.originCountry}
+          {originCountry}
         </h4>
         <span className="text-xs tracking-wider opacity-90 text-center font-serif italic mt-0.5">
-          {bean.originRegion}
+          {originRegion}
         </span>
       </div>
 
