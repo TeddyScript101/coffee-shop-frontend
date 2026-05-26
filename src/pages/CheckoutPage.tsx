@@ -188,7 +188,7 @@ export function CheckoutPage() {
   // Hidden dev hotkey: Shift+Alt+F — fills the entire form with test data
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.shiftKey && e.altKey && e.key === 'F') {
+      if (e.shiftKey && e.altKey && e.code === 'KeyF') {
         setShipping({
           firstName: 'Teddy',
           lastName: 'Yee',
