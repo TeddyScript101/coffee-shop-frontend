@@ -12,6 +12,7 @@ import { ProductCardSkeleton } from '@components/feedback/LoadingSkeleton/Loadin
 import { Button } from '@ds/components/Button/Button'
 import { useCoffeeBeans } from '@hooks/useCoffeeBeans'
 import { useEquipments } from '@hooks/useEquipments'
+import { ErrorState } from '@components/feedback/ErrorState/ErrorState'
 
 const gridVariants: Variants = {
   hidden: {},
@@ -65,8 +66,8 @@ function SectionHeader({
 
 
 export function HomePage() {
-  const { data: beans, isLoading: beansLoading } = useCoffeeBeans()
-  const { data: equipments, isLoading: equipLoading } = useEquipments()
+  const { data: beans, isLoading: beansLoading, isError: beansError, refetch: refetchBeans } = useCoffeeBeans()
+  const { data: equipments, isLoading: equipLoading, isError: equipError, refetch: refetchEquip } = useEquipments()
 
   const featuredBeans = beans?.slice(0, 3) ?? []
   const featuredEquip = equipments?.slice(0, 3) ?? []
@@ -97,6 +98,8 @@ export function HomePage() {
                   <ProductCardSkeleton />
                 </motion.div>
               ))
+            : beansError
+            ? <div className="col-span-full"><ErrorState onRetry={refetchBeans} /></div>
             : featuredBeans.map((bean) => (
                 <motion.div key={bean.id} variants={cardVariants}>
                   <CoffeeBeanCard bean={bean} />
@@ -123,6 +126,8 @@ export function HomePage() {
                     <ProductCardSkeleton />
                   </motion.div>
                 ))
+              : equipError
+              ? <div className="col-span-full"><ErrorState onRetry={refetchEquip} /></div>
               : featuredEquip.map((eq) => (
                   <motion.div key={eq.id} variants={cardVariants}>
                     <EquipmentCard equipment={eq} />
