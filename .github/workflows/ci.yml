@@ -59,6 +59,10 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Build backend
+        working-directory: CoffeeShopApi
+        run: dotnet build CoffeeShopApi.csproj -c Release
+
       - name: Start backend
         working-directory: CoffeeShopApi
         env:
@@ -68,14 +72,17 @@ jobs:
           Jwt__Key: ${{ secrets.JWT_KEY }}
           # RabbitMQ:Host intentionally not set — backend falls back to in-memory transport
         run: |
-          dotnet run &
-          # Poll until the API responds (up to 60s)
-          for i in $(seq 1 30); do
+          dotnet run -c Release --no-build --project CoffeeShopApi.csproj > /tmp/backend.log 2>&1 &
+          # Poll until the API responds (up to 90s)
+          for i in $(seq 1 45); do
             curl -sf http://localhost:5046/api/products/coffeebeans > /dev/null 2>&1 \
               && echo "Backend ready after ${i}x2s" && break
-            echo "Waiting for backend... ($i/30)"
+            echo "Waiting for backend... ($i/45)"
             sleep 2
           done
+          # Print backend log if API never came up
+          curl -sf http://localhost:5046/api/products/coffeebeans > /dev/null 2>&1 \
+            || (echo "=== Backend log ===" && cat /tmp/backend.log && exit 1)
 
       - run: npm ci
 
