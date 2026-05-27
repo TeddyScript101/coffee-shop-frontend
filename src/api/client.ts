@@ -27,8 +27,12 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      localStorage.removeItem('coffee_shop_auth')
-      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      // Skip redirect when already on an auth page — those pages handle 401 themselves
+      const onAuthPage = ['/login', '/register'].some(p => window.location.pathname.startsWith(p))
+      if (!onAuthPage) {
+        localStorage.removeItem('coffee_shop_auth')
+        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      }
     }
     return Promise.reject(error)
   },
