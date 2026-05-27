@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { PageLayout } from '@components/layout/PageLayout'
 import { Input } from '@ds/components/Input/Input'
 import { Button } from '@ds/components/Button/Button'
+import { ErrorState } from '@components/feedback/ErrorState/ErrorState'
+import { Toast } from '@components/feedback/Toast/Toast'
 import { useAuthStore } from '@store/authStore'
 import { getProfile, updateProfile, changePassword } from '@/api/account'
 import { getMyOrders } from '@/api/orders'
 import { ProductThumbnail } from '@components/products/ProductThumbnail/ProductThumbnail'
-import { Toast } from '@components/feedback/Toast/Toast'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { cn } from '@/utils/cn'
 import type { UserProfileDto, OrderDto } from '@/types/api'
@@ -175,14 +177,23 @@ function ProfileTab({ profile, onSaved }: { profile: UserProfileDto; onSaved: (p
           />
         </div>
 
-        {toast && (
-          <div className="mt-5">
-            <Toast message={toast.msg} type={toast.type} />
-          </div>
-        )}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key="toast"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              className="mt-5"
+            >
+              <Toast message={toast.msg} type={toast.type} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="mt-6 flex justify-end">
-          <Button variant="primary" onClick={handleSave} disabled={saving}>
+          <Button variant="primary" onClick={handleSave} isLoading={saving}>
             {saving ? 'Saving...' : 'Save Address'}
           </Button>
         </div>
@@ -257,14 +268,23 @@ function PasswordTab() {
         />
       </div>
 
-      {toast && (
-        <div className="mt-5">
-          <Toast message={toast.msg} type={toast.type} />
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key="toast"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mt-5"
+          >
+            <Toast message={toast.msg} type={toast.type} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="mt-6 flex justify-end">
-        <Button variant="primary" onClick={handleSubmit} disabled={saving}>
+        <Button variant="primary" onClick={handleSubmit} isLoading={saving}>
           {saving ? 'Updating...' : 'Update Password'}
         </Button>
       </div>
@@ -278,13 +298,16 @@ function OrdersTab() {
   const [orders, setOrders] = useState<OrderDto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
+    setLoading(true)
+    setError(false)
     getMyOrders()
       .then(setOrders)
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [])
+  }, [retryCount])
 
   if (loading) {
     return (
@@ -295,11 +318,7 @@ function OrdersTab() {
   }
 
   if (error) {
-    return (
-      <div className="text-center py-16 text-[var(--color-text-muted)]">
-        Failed to load orders. Please refresh.
-      </div>
-    )
+    return <ErrorState onRetry={() => setRetryCount((c) => c + 1)} />
   }
 
   if (orders.length === 0) {
@@ -438,7 +457,7 @@ export function AccountPage() {
                 key={tab.id}
                 onClick={() => setTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap',
+                  'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]',
                   activeTab === tab.id
                     ? 'bg-[var(--color-primary)] text-white shadow-sm'
                     : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-text)]',

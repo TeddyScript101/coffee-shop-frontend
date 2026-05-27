@@ -44,7 +44,7 @@ function SectionHeader({
       <motion.h2
         initial={{ opacity: 0, x: -28 }}
         whileInView={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.6, ease: EASE }}
         viewport={{ once: true }}
         className="font-[var(--font-serif)] text-3xl md:text-4xl font-bold tracking-tight text-[var(--color-text)]"
       >
@@ -53,7 +53,7 @@ function SectionHeader({
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         whileInView={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.6, delay: 0.18, ease: EASE }}
         viewport={{ once: true }}
       >
         <Link to={linkTo}>

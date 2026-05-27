@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json; d=json.loads(sys.stdin.read()); f=d.get('file_path',''); sys.exit(0) if (f.endswith('.ts') or f.endswith('.tsx')) else sys.exit(1)\" && cd /Users/teddy/Documents/programming/claude-ai-agents/coffee-shop/CoffeeShopFrontEnd && npx tsc --noEmit 2>&1 | head -30; exit 0"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,os; d=json.loads(sys.stdin.read()); f=d.get('file_path',''); bn=os.path.basename(f); (print('BLOCKED: .env files are protected. Confirm explicitly if intentional.') or sys.exit(2)) if bn.startswith('.env') else sys.exit(0)\""
+          }
+        ]
+      }
+    ]
+  }
+}

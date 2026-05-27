@@ -33,7 +33,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
           <div className="flex items-center rounded-xl border border-[var(--color-border)] overflow-hidden">
             <button
               onClick={() => onUpdateQuantity(item.productId, item.quantity - 1)}
-              className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
               aria-label="Decrease quantity"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -45,7 +45,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
             </span>
             <button
               onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
-              className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
               aria-label="Increase quantity"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -56,7 +56,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
 
           <button
             onClick={() => onRemove(item.productId)}
-            className="text-xs text-[var(--color-text-subtle)] hover:text-red-500 transition-colors"
+            className="text-xs text-[var(--color-text-subtle)] hover:text-red-500 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] rounded"
           >
             Remove
           </button>

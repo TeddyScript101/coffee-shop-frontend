@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { PageLayout } from '@components/layout/PageLayout'
 import { MembershipCard } from '@components/membership/MembershipCard/MembershipCard'
 import { TierBadge } from '@components/membership/TierBadge/TierBadge'
+import { ErrorState } from '@components/feedback/ErrorState/ErrorState'
 import { useAuthStore } from '@store/authStore'
 import { getProfile } from '@/api/account'
 import type { MembershipTier, UserProfileDto } from '@/types/api'
@@ -27,11 +28,19 @@ export function MembershipDashboardPage() {
   const { user } = useAuthStore()
   const [profile, setProfile] = useState<UserProfileDto | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
+  function fetchProfile() {
+    setLoading(true)
+    setError(false)
     getProfile()
       .then(setProfile)
+      .catch(() => setError(true))
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchProfile()
   }, [])
 
   if (loading) {
@@ -39,6 +48,16 @@ export function MembershipDashboardPage() {
       <PageLayout>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <p className="text-[var(--color-text-muted)]">Loading...</p>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <ErrorState onRetry={fetchProfile} />
         </div>
       </PageLayout>
     )

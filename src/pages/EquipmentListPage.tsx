@@ -55,7 +55,7 @@ export function EquipmentListPage() {
                 key={option}
                 onClick={() => setTypeFilter(option)}
                 className={cn(
-                  'text-sm px-3 py-1.5 rounded-full border transition-all duration-[250ms]',
+                  'text-sm px-3 py-1.5 rounded-full border transition-all duration-[250ms] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]',
                   typeFilter === option
                     ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
                     : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-primary)] hover:text-[var(--color-text)]',

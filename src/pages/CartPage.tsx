@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { PageLayout } from '@components/layout/PageLayout'
 import { Button } from '@ds/components/Button/Button'
 import { useCartStore, cartTotal, cartItemCount } from '@store/cartStore'
@@ -60,14 +61,21 @@ export function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Items list */}
             <div className="lg:col-span-2 flex flex-col gap-3">
-              {items.map((item) => (
-                <CartItemRow
-                  key={item.productId}
-                  item={item}
-                  onUpdateQuantity={updateQuantity}
-                  onRemove={removeItem}
-                />
-              ))}
+              <AnimatePresence initial={false}>
+                {items.map((item) => (
+                  <motion.div
+                    key={item.productId}
+                    layout
+                    exit={{ opacity: 0, x: -24, scale: 0.97, transition: { duration: 0.18, ease: [0.25, 0.1, 0.25, 1] } }}
+                  >
+                    <CartItemRow
+                      item={item}
+                      onUpdateQuantity={updateQuantity}
+                      onRemove={removeItem}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
 
             {/* Order summary */}
