@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Job 1: Type check + build
+  # Fast feedback — no backend required.
+  # -----------------------------------------------------------------------
+  build:
+    name: Type Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build   # tsc + vite build
+
+  # -----------------------------------------------------------------------
+  # Job 2: Playwright E2E
+  # Requires the backend repo to be accessible via secrets:
+  #   DB_CONNECTION_STRING — Neon.tech (or any Postgres) connection string
+  #   JWT_KEY              — the JWT signing key
+  #   (backend repo is public — no GH_PAT needed)
+  #
+  # No RabbitMQ needed — backend uses in-memory transport when RabbitMQ:Host is unset.
+  # -----------------------------------------------------------------------
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: TeddyScript101/dotnetCoffeeShopBackend
+          path: CoffeeShopApi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Start backend
+        working-directory: CoffeeShopApi
+        env:
+          ASPNETCORE_URLS: http://localhost:5046
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
+          Jwt__Key: ${{ secrets.JWT_KEY }}
+          # RabbitMQ:Host intentionally not set — backend falls back to in-memory transport
+        run: |
+          dotnet run &
+          # Poll until the API responds (up to 60s)
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5046/api/products/coffeebeans > /dev/null 2>&1 \
+              && echo "Backend ready after ${i}x2s" && break
+            echo "Waiting for backend... ($i/30)"
+            sleep 2
+          done
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
