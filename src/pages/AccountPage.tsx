@@ -6,6 +6,8 @@ import { Button } from '@ds/components/Button/Button'
 import { useAuthStore } from '@store/authStore'
 import { getProfile, updateProfile, changePassword } from '@/api/account'
 import { getMyOrders } from '@/api/orders'
+import { ProductThumbnail } from '@components/products/ProductThumbnail/ProductThumbnail'
+import { Toast } from '@components/feedback/Toast/Toast'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { cn } from '@/utils/cn'
 import type { UserProfileDto, OrderDto } from '@/types/api'
@@ -55,33 +57,6 @@ const STATUS_COLOR: Record<string, string> = {
   Shipped: 'bg-violet-50 text-violet-700',
   Delivered: 'bg-green-50 text-green-700',
   Cancelled: 'bg-red-50 text-red-700',
-}
-
-// ---- Feedback toast ----
-
-function Toast({ message, type }: { message: string; type: 'success' | 'error' }) {
-  return (
-    <div
-      className={cn(
-        'flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium border',
-        type === 'success'
-          ? 'bg-green-50 text-green-800 border-green-200'
-          : 'bg-red-50 text-red-800 border-red-200',
-      )}
-    >
-      {type === 'success' ? (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M3 8L6.5 11.5L13 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ) : (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/>
-          <path d="M8 5V8.5M8 11H8.01" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-        </svg>
-      )}
-      {message}
-    </div>
-  )
 }
 
 // ---- Profile + Billing tab ----
@@ -383,15 +358,13 @@ function OrdersTab() {
               {order.items.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-[var(--color-surface-elevated)] flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl overflow-hidden shrink-0"
                 >
-                  {item.productImageUrl ? (
-                    <img src={item.productImageUrl} alt={item.productName} className="w-full h-full object-cover" />
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-[var(--color-text-subtle)]" aria-hidden="true">
-                      <path d="M3 3H5L7 10H10L12 6H4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
+                  <ProductThumbnail
+                    productType={item.productType}
+                    name={item.productName}
+                    imageUrl={item.productImageUrl}
+                  />
                 </div>
               ))}
               {order.items.length > 3 && (

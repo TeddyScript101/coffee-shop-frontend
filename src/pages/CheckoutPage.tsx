@@ -7,6 +7,8 @@ import { useCartStore, cartTotal } from '@store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { createOrder } from '@/api/orders'
 import { getProfile } from '@/api/account'
+import { StepBar } from '@components/checkout/StepBar/StepBar'
+import { OrderSummary } from '@components/checkout/OrderSummary/OrderSummary'
 import type { AxiosError } from 'axios'
 
 // ---- Types ----
@@ -28,8 +30,6 @@ interface PaymentForm {
   cardCvc: string
 }
 
-const STEPS = ['Shipping', 'Payment', 'Review'] as const
-
 // ---- Helpers ----
 
 function formatCardNumber(raw: string) {
@@ -40,102 +40,6 @@ function formatExpiry(raw: string) {
   const digits = raw.replace(/\D/g, '').slice(0, 4)
   if (digits.length > 2) return `${digits.slice(0, 2)}/${digits.slice(2)}`
   return digits
-}
-
-// ---- Step indicator ----
-
-function StepBar({ current }: { current: number }) {
-  return (
-    <div className="flex items-center gap-0 mb-10">
-      {STEPS.map((label, i) => {
-        const done = i < current
-        const active = i === current
-        return (
-          <div key={label} className="flex items-center">
-            <div className="flex flex-col items-center">
-              <div className={[
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors',
-                done ? 'bg-[var(--color-primary)] text-white'
-                  : active ? 'bg-[var(--color-primary)] text-white ring-2 ring-[var(--color-primary)]/30 ring-offset-2'
-                    : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)]',
-              ].join(' ')}>
-                {done ? (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                    <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <span className={[
-                'text-xs mt-1.5 whitespace-nowrap',
-                active ? 'text-[var(--color-primary)] font-medium' : 'text-[var(--color-text-muted)]',
-              ].join(' ')}>
-                {label}
-              </span>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div className={[
-                'h-px w-12 sm:w-20 mx-2 mt-[-12px] transition-colors',
-                done ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-border)]',
-              ].join(' ')} />
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-// ---- Order summary sidebar ----
-
-function OrderSummary() {
-  const items = useCartStore((s) => s.items)
-  const subtotal = cartTotal(items)
-  const shippingCost = subtotal >= 100 ? 0 : 10
-  const total = subtotal + shippingCost
-
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
-      <h3 className="font-[var(--font-serif)] text-lg text-[var(--color-text)] mb-4">Your Order</h3>
-      <div className="flex flex-col gap-3 mb-4">
-        {items.map((item) => (
-          <div key={item.productId} className="flex gap-3">
-            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-[var(--color-surface-elevated)] flex items-center justify-center">
-              {item.imageUrl ? (
-                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[var(--color-text-subtle)]" aria-hidden="true">
-                  <path d="M4 4H6L8 12H12L14 7H5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--color-text)] truncate">{item.name}</p>
-              <p className="text-xs text-[var(--color-text-subtle)]">Qty {item.quantity}</p>
-            </div>
-            <p className="text-sm text-[var(--color-text)] shrink-0">{formatCurrency(item.price * item.quantity)}</p>
-          </div>
-        ))}
-      </div>
-      <div className="border-t border-[var(--color-border-subtle)] pt-3 flex flex-col gap-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-[var(--color-text-muted)]">Subtotal</span>
-          <span>{formatCurrency(subtotal)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-[var(--color-text-muted)]">Shipping</span>
-          <span className={shippingCost === 0 ? 'text-green-600 font-medium' : ''}>
-            {shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}
-          </span>
-        </div>
-        <div className="flex justify-between font-medium mt-1 pt-2 border-t border-[var(--color-border-subtle)]">
-          <span>Total</span>
-          <span className="text-[var(--color-primary)]">{formatCurrency(total)}</span>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ---- Main component ----
@@ -301,14 +205,14 @@ export function CheckoutPage() {
 
   return (
     <PageLayout>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="font-[var(--font-serif)] text-3xl text-[var(--color-text)] mb-8">Checkout</h1>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 overflow-x-hidden">
+        <h1 className="font-[var(--font-serif)] text-2xl sm:text-3xl text-[var(--color-text)] mb-6 sm:mb-8">Checkout</h1>
 
-        <StepBar current={step} />
+        <StepBar current={step} className="mb-10" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Form area */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-w-0">
             {step === 0 && (
               <ShippingStep
                 values={shipping}
@@ -344,7 +248,7 @@ export function CheckoutPage() {
               </div>
             )}
 
-            <div className="flex justify-between mt-8">
+            <div className="flex justify-between mt-6 sm:mt-8">
               {step > 0 ? (
                 <Button variant="secondary" onClick={handleBack} disabled={submitting}>
                   Back
@@ -393,10 +297,10 @@ function ShippingStep({
   onChange: (field: keyof ShippingForm, value: string) => void
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
-      <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)] mb-6">Shipping Address</h2>
+    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
+      <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)] mb-5 sm:mb-6">Shipping Address</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             First Name <span className="text-red-500">*</span>
@@ -490,40 +394,40 @@ function PaymentStep({
   onChange: (field: keyof PaymentForm, value: string) => void
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
+      <div className="flex items-start sm:items-center justify-between gap-2 mb-5 sm:mb-6">
         <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)]">Payment Details</h2>
-        <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-elevated)] px-3 py-1.5 rounded-full">
+        <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-elevated)] px-3 py-1.5 rounded-full shrink-0">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
             <path d="M9 5V4C9 2.34 7.66 1 6 1C4.34 1 3 2.34 3 4V5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
             <rect x="1.5" y="5" width="9" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
           </svg>
-          Simulated payment
+          Simulated
         </span>
       </div>
 
       {/* Card visual */}
-      <div className="relative h-44 rounded-2xl bg-gradient-to-br from-[var(--color-brand-charcoal)] to-[#4a3728] p-6 mb-6 overflow-hidden select-none">
+      <div className="relative h-36 sm:h-44 rounded-2xl bg-gradient-to-br from-[var(--color-brand-charcoal)] to-[#4a3728] p-4 sm:p-6 mb-5 sm:mb-6 overflow-hidden select-none">
         <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-8 w-32 h-32 rounded-full bg-white/5 translate-y-1/2" />
-        <p className="font-mono text-white/90 tracking-widest text-lg mt-4">
+        <p className="font-mono text-white/90 tracking-wider sm:tracking-widest text-sm sm:text-lg mt-2 sm:mt-4 truncate">
           {values.cardNumber || '•••• •••• •••• ••••'}
         </p>
-        <div className="flex items-end justify-between mt-5">
-          <div>
+        <div className="flex items-end justify-between mt-3 sm:mt-5">
+          <div className="min-w-0 mr-4">
             <p className="text-white/50 text-xs uppercase tracking-wider">Card Holder</p>
-            <p className="text-white font-medium text-sm mt-0.5 truncate max-w-[160px]">
+            <p className="text-white font-medium text-sm mt-0.5 truncate">
               {values.cardholderName || 'Your Name'}
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
             <p className="text-white/50 text-xs uppercase tracking-wider">Expires</p>
             <p className="text-white font-medium text-sm mt-0.5">{values.cardExpiry || 'MM/YY'}</p>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <div>
           <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             Cardholder Name <span className="text-red-500">*</span>
@@ -597,8 +501,8 @@ function ReviewStep({
   shippingCost: number
 }) {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="bg-white rounded-2xl p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
+    <div className="flex flex-col gap-4 sm:gap-5">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
         <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)] mb-4">Shipping To</h2>
         <p className="text-[var(--color-text)] font-medium">{shipping.firstName} {shipping.lastName}</p>
         <p className="text-[var(--color-text-muted)] text-sm mt-1">{shipping.address}</p>
@@ -608,19 +512,19 @@ function ReviewStep({
         <p className="text-[var(--color-text-muted)] text-sm">{shipping.country}</p>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
         <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)] mb-4">Payment</h2>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-7 rounded bg-[var(--color-brand-charcoal)] flex items-center justify-center">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-7 rounded bg-[var(--color-brand-charcoal)] flex items-center justify-center shrink-0">
             <span className="text-white text-[10px] font-bold tracking-wider">CARD</span>
           </div>
-          <p className="text-[var(--color-text)]">
+          <p className="text-[var(--color-text)] truncate">
             {payment.cardholderName} &middot; ending in {payment.cardNumber.replace(/\s/g, '').slice(-4)}
           </p>
         </div>
       </div>
 
-      <div className="bg-[var(--color-surface-elevated)] rounded-2xl p-5 border border-[var(--color-border-subtle)]">
+      <div className="bg-[var(--color-surface-elevated)] rounded-2xl p-4 sm:p-5 border border-[var(--color-border-subtle)]">
         <p className="text-sm text-[var(--color-text-muted)]">
           By placing your order you agree to our (hypothetical) terms of service. This is a demo order and no real charge will occur.
         </p>

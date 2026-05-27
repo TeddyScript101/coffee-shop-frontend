@@ -296,15 +296,17 @@ export function Navbar() {
             ))}
           </nav>
           <div className={cn(
-            'flex items-center justify-between mt-4 pt-4 border-t',
+            'flex flex-col gap-1 mt-4 pt-4 border-t',
             isTransparent ? 'border-white/[0.1]' : 'border-[var(--color-border-subtle)]',
           )}>
             <Link
               to="/cart"
               onClick={() => setMobileOpen(false)}
               className={cn(
-                'flex items-center gap-2 text-sm',
-                isTransparent ? 'text-white/70' : 'text-[var(--color-text-muted)]',
+                'flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-colors',
+                isTransparent
+                  ? 'text-white/70 hover:bg-white/10 hover:text-white'
+                  : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-text)]',
               )}
             >
               Cart {itemCount > 0 && (
@@ -314,7 +316,7 @@ export function Navbar() {
               )}
             </Link>
             {isAuthenticated ? (
-              <div className="flex flex-col gap-1 w-full mt-2">
+              <>
                 <Link
                   to="/account?tab=profile"
                   onClick={() => setMobileOpen(false)}
@@ -360,17 +362,19 @@ export function Navbar() {
                 >
                   Sign out
                 </button>
-              </div>
+              </>
             ) : (
-              <Link to="/login" onClick={() => setMobileOpen(false)}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className={cn(isTransparent && 'bg-white/10 border-white/30 text-white hover:bg-white/20')}
-                >
-                  Sign in
-                </Button>
-              </Link>
+              <div className="px-3 pt-1">
+                <Link to="/login" onClick={() => setMobileOpen(false)}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className={cn(isTransparent && 'bg-white/10 border-white/30 text-white hover:bg-white/20')}
+                  >
+                    Sign in
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

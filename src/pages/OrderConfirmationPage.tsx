@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { PageLayout } from '@components/layout/PageLayout'
 import { Button } from '@ds/components/Button/Button'
 import { getOrder } from '@/api/orders'
+import { ProductThumbnail } from '@components/products/ProductThumbnail/ProductThumbnail'
 import { formatCurrency } from '@/utils/formatCurrency'
 import type { OrderDto } from '@/types/api'
 
@@ -72,14 +73,12 @@ export function OrderConfirmationPage() {
           <div className="flex flex-col divide-y divide-[var(--color-border-subtle)]">
             {order.items.map((item) => (
               <div key={item.id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-[var(--color-surface-elevated)] flex items-center justify-center">
-                  {item.productImageUrl ? (
-                    <img src={item.productImageUrl} alt={item.productName} className="w-full h-full object-cover" />
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-[var(--color-text-subtle)]" aria-hidden="true">
-                      <path d="M4 4H7L9 13H14L17 8H5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
+                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                  <ProductThumbnail
+                    productType={item.productType}
+                    name={item.productName}
+                    imageUrl={item.productImageUrl}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-[var(--color-text)] truncate">{item.productName}</p>

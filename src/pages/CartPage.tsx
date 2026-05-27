@@ -4,7 +4,7 @@ import { Button } from '@ds/components/Button/Button'
 import { useCartStore, cartTotal, cartItemCount } from '@store/cartStore'
 import { useAuthStore } from '@store/authStore'
 import { formatCurrency } from '@/utils/formatCurrency'
-import { TasteNoteImage } from '@components/products/CoffeeBeanCard/TasteNoteImage'
+import { CartItemRow } from '@components/cart/CartItemRow/CartItemRow'
 
 export function CartPage() {
   const { items, removeItem, updateQuantity } = useCartStore()
@@ -61,84 +61,12 @@ export function CartPage() {
             {/* Items list */}
             <div className="lg:col-span-2 flex flex-col gap-3">
               {items.map((item) => (
-                <div
+                <CartItemRow
                   key={item.productId}
-                  className="flex gap-4 bg-white rounded-2xl p-5 shadow-[var(--shadow-soft-sm)] border border-[var(--color-border-subtle)]"
-                >
-                  {/* Thumbnail */}
-                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-[var(--color-surface-elevated)] flex items-center justify-center">
-                    {item.productType === 'CoffeeBean' && item.originCountry && item.tastingNotes ? (
-                      <TasteNoteImage
-                        originCountry={item.originCountry}
-                        originRegion={item.originRegion ?? ''}
-                        tastingNotes={item.tastingNotes}
-                        className="w-full h-full"
-                      />
-                    ) : item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="text-[var(--color-text-subtle)]" aria-hidden="true">
-                        <path d="M7 7H10L13 21H21L24 11H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[var(--color-text)] truncate">{item.name}</p>
-                    <p className="text-xs text-[var(--color-text-subtle)] mt-0.5 mb-3">
-                      {item.productType === 'CoffeeBean' ? 'Coffee Bean' : 'Equipment'}
-                    </p>
-
-                    {/* Quantity controls */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center rounded-xl border border-[var(--color-border)] overflow-hidden">
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] transition-colors"
-                          aria-label="Decrease quantity"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                            <path d="M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                        <span className="w-8 text-center text-sm font-medium text-[var(--color-text)]">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] transition-colors"
-                          aria-label="Increase quantity"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                            <path d="M6 2V10M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => removeItem(item.productId)}
-                        className="text-xs text-[var(--color-text-subtle)] hover:text-red-500 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Line total */}
-                  <div className="shrink-0 text-right">
-                    <p className="font-medium text-[var(--color-text)]">
-                      {formatCurrency(item.price * item.quantity)}
-                    </p>
-                    <p className="text-xs text-[var(--color-text-subtle)] mt-0.5">
-                      {formatCurrency(item.price)} each
-                    </p>
-                  </div>
-                </div>
+                  item={item}
+                  onUpdateQuantity={updateQuantity}
+                  onRemove={removeItem}
+                />
               ))}
             </div>
 

@@ -13,6 +13,7 @@ import { Button } from '@ds/components/Button/Button'
 import { useCoffeeBeans } from '@hooks/useCoffeeBeans'
 import { useEquipments } from '@hooks/useEquipments'
 import { ErrorState } from '@components/feedback/ErrorState/ErrorState'
+import { EmptyState } from '@components/feedback/EmptyState/EmptyState'
 
 const gridVariants: Variants = {
   hidden: {},
@@ -85,12 +86,15 @@ export function HomePage() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <SectionHeader title="Our Coffees" linkTo="/coffee" linkLabel="View all" />
+        {/* key changes when loading resolves so whileInView re-fires for the actual cards.
+            amount:0 ensures the animation triggers even if only a sliver is in view. */}
         <motion.div
+          key={beansLoading ? 'beans-loading' : 'beans-loaded'}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={gridVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={{ once: true, amount: 0 }}
         >
           {beansLoading
             ? Array.from({ length: 3 }).map((_, i) => (
@@ -100,6 +104,16 @@ export function HomePage() {
               ))
             : beansError
             ? <div className="col-span-full"><ErrorState onRetry={refetchBeans} /></div>
+            : featuredBeans.length === 0
+            ? (
+                <div className="col-span-full">
+                  <EmptyState
+                    heading="No coffees available right now"
+                    description="Check back soon."
+                    action={{ label: 'Retry', onClick: refetchBeans }}
+                  />
+                </div>
+              )
             : featuredBeans.map((bean) => (
                 <motion.div key={bean.id} variants={cardVariants}>
                   <CoffeeBeanCard bean={bean} />
@@ -114,11 +128,12 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <SectionHeader title="Equipment" linkTo="/equipment" linkLabel="View all" />
           <motion.div
+            key={equipLoading ? 'equip-loading' : 'equip-loaded'}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             variants={gridVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.15 }}
+            viewport={{ once: true, amount: 0 }}
           >
             {equipLoading
               ? Array.from({ length: 3 }).map((_, i) => (
@@ -128,6 +143,16 @@ export function HomePage() {
                 ))
               : equipError
               ? <div className="col-span-full"><ErrorState onRetry={refetchEquip} /></div>
+              : featuredEquip.length === 0
+              ? (
+                  <div className="col-span-full">
+                    <EmptyState
+                      heading="No equipment available right now"
+                      description="Check back soon."
+                      action={{ label: 'Retry', onClick: refetchEquip }}
+                    />
+                  </div>
+                )
               : featuredEquip.map((eq) => (
                   <motion.div key={eq.id} variants={cardVariants}>
                     <EquipmentCard equipment={eq} />
