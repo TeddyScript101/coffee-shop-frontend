@@ -15,9 +15,15 @@ test.describe('Auth', () => {
     await page.goto('/login')
     await page.getByLabel('Email').fill('nobody@nowhere.com')
     await page.getByLabel('Password').fill('wrongpassword')
-    await page.getByRole('button', { name: 'Sign in' }).click()
-    // Backend takes ~7 s to return 401 for wrong credentials; raise timeout accordingly
-    await expect(page.getByRole('alert')).toContainText('Invalid email or password', { timeout: 15_000 })
+
+    // Wait for the login API response before asserting UI — avoids races in CI
+    const [response] = await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/auth/login'), { timeout: 20_000 }),
+      page.getByRole('button', { name: 'Sign in' }).click(),
+    ])
+
+    expect(response.status()).toBe(401)
+    await expect(page.getByRole('alert')).toContainText('Invalid email or password', { timeout: 5_000 })
   })
 
   test('valid credentials redirect to home', async ({ page }) => {
