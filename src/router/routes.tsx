@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
 import { PrivateRoute } from './PrivateRoute'
-import { HealthCheckWrapper } from '@components/HealthCheckWrapper'
 import { HomePage } from '@pages/HomePage'
 import { CoffeeListPage } from '@pages/CoffeeListPage'
 import { EquipmentListPage } from '@pages/EquipmentListPage'
@@ -9,7 +8,6 @@ import { LoginPage } from '@pages/LoginPage'
 import { RegisterPage } from '@pages/RegisterPage'
 import { MembershipDashboardPage } from '@pages/MembershipDashboardPage'
 import { AdminProductsPage } from '@pages/admin/AdminProductsPage'
-import { WarmingUpPage } from '@pages/WarmingUpPage'
 import { BackendRedirectPage } from '@pages/BackendRedirectPage'
 import { CartPage } from '@pages/CartPage'
 import { CheckoutPage } from '@pages/CheckoutPage'
@@ -18,9 +16,7 @@ import { AccountPage } from '@pages/AccountPage'
 
 export function AppRoutes() {
   return (
-    <HealthCheckWrapper>
-      <Routes>
-        <Route path="/warming-up" element={<WarmingUpPage />} />
+    <Routes>
         <Route path="/swagger" element={<BackendRedirectPage backendPath="/swagger" />} />
         <Route path="/scalar"  element={<BackendRedirectPage backendPath="/scalar"  />} />
         <Route path="/" element={<HomePage />} />
@@ -70,7 +66,6 @@ export function AppRoutes() {
             </PrivateRoute>
           }
         />
-      </Routes>
-    </HealthCheckWrapper>
+    </Routes>
   )
 }
