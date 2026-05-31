@@ -18,6 +18,11 @@ playwright-report/
 test-results/
 .playwright-mcp/
 
+# Local env files
+.env.development
+.env.production
+.env.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

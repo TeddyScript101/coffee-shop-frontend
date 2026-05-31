@@ -146,9 +146,6 @@ export interface CreateOrderRequest {
     country: string
   }
   payment: {
-    cardNumber: string
-    cardExpiry: string
-    cardCvc: string
-    cardholderName: string
+    paymentIntentId: string
   }
 }

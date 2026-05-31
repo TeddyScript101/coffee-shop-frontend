@@ -46,7 +46,7 @@ test.describe('Checkout', () => {
 
   async function expectOrderConfirmationOrCheckoutError(page: import('@playwright/test').Page) {
     try {
-      await page.waitForURL(/\/order-confirmation\//, { timeout: 15_000 })
+      await page.waitForURL(/\/order-confirmation\//, { timeout: 30_000 })
       await expect(page.getByRole('heading', { name: 'Order Confirmed!' })).toBeVisible()
       return true
     } catch {
@@ -55,6 +55,14 @@ test.describe('Checkout', () => {
       ).toBeVisible({ timeout: 5_000 })
       return false
     }
+  }
+
+  async function fillStripeCard(page: import('@playwright/test').Page, cardNumber = '4242424242424242') {
+    const stripeFrame = page.frameLocator('iframe[src*="stripe"]').first()
+    await stripeFrame.locator('input[name="cardnumber"]').waitFor({ timeout: 15_000 })
+    await stripeFrame.locator('input[name="cardnumber"]').fill(cardNumber)
+    await stripeFrame.locator('input[name="exp-date"]').fill('1234')
+    await stripeFrame.locator('input[name="cvc"]').fill('123')
   }
 
   test('authenticated user can reach checkout with items in cart', async ({ page }) => {
@@ -83,17 +91,12 @@ test.describe('Checkout', () => {
 
     // ---- Step 1: Payment ----
     await expect(page.getByRole('heading', { name: 'Payment Details' })).toBeVisible()
-    await page.getByPlaceholder('TARO YAMAMOTO').fill('TEDDY YEE')
-    await page.getByPlaceholder('1234 5678 9012 3456').fill('1234 5678 9012 3456')
-    await page.getByPlaceholder('MM/YY').fill('08/34')
-    // exact: true avoids matching the card number placeholder which also contains "123"
-    await page.getByPlaceholder('123', { exact: true }).fill('123')
+    await fillStripeCard(page)
     await page.getByRole('button', { name: 'Continue' }).click()
 
     // ---- Step 2: Review ----
     await expect(page.getByText('Shipping To')).toBeVisible()
-    // Regex (no /i flag) is case-sensitive: matches "TEDDY YEE · ending in …" but not "Teddy Yee"
-    await expect(page.getByText(/TEDDY YEE/)).toBeVisible()
+    await expect(page.getByText('Stripe card payment')).toBeVisible()
     await page.getByRole('button', { name: 'Place Order' }).click()
 
     // ---- Confirmation ----
@@ -130,10 +133,7 @@ test.describe('Checkout', () => {
     await page.getByRole('button', { name: 'Continue' }).click()
 
     // Fill payment
-    await page.getByPlaceholder('TARO YAMAMOTO').fill('TEDDY YEE')
-    await page.getByPlaceholder('1234 5678 9012 3456').fill('4111 1111 1111 1111')
-    await page.getByPlaceholder('MM/YY').fill('12/29')
-    await page.getByPlaceholder('123', { exact: true }).fill('999')
+    await fillStripeCard(page)
     await page.getByRole('button', { name: 'Continue' }).click()
 
     // Place order

@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { PageLayout } from '@components/layout/PageLayout'
 import { Button } from '@ds/components/Button/Button'
 import { Input } from '@ds/components/Input/Input'
 import { useCartStore, cartTotal } from '@store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { createOrder } from '@/api/orders'
+import { createPaymentIntent } from '@/api/payments'
 import { getProfile } from '@/api/account'
 import { StepBar } from '@components/checkout/StepBar/StepBar'
 import { OrderSummary } from '@components/checkout/OrderSummary/OrderSummary'
 import type { AxiosError } from 'axios'
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 // ---- Types ----
 
@@ -23,32 +28,41 @@ interface ShippingForm {
   country: string
 }
 
-interface PaymentForm {
-  cardholderName: string
-  cardNumber: string
-  cardExpiry: string
-  cardCvc: string
-}
-
-// ---- Helpers ----
-
-function formatCardNumber(raw: string) {
-  return raw.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
-}
-
-function formatExpiry(raw: string) {
-  const digits = raw.replace(/\D/g, '').slice(0, 4)
-  if (digits.length > 2) return `${digits.slice(0, 2)}/${digits.slice(2)}`
-  return digits
-}
-
-// ---- Main component ----
+// ---- Outer wrapper — mounts Elements provider ----
 
 export function CheckoutPage() {
+  const items = useCartStore((s) => s.items)
+
+  if (items.length === 0) {
+    return (
+      <PageLayout>
+        <div className="max-w-xl mx-auto px-4 py-24 text-center">
+          <p className="text-xl font-[var(--font-serif)] text-[var(--color-text)] mb-4">Your cart is empty</p>
+          <Link to="/coffee"><Button variant="primary">Shop Coffee</Button></Link>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutPageInner />
+    </Elements>
+  )
+}
+
+// ---- Inner component — has access to Stripe hooks ----
+
+function CheckoutPageInner() {
   const navigate = useNavigate()
   const items = useCartStore((s) => s.items)
   const clearCart = useCartStore((s) => s.clearCart)
   const subtotal = cartTotal(items)
+  const shippingCost = subtotal >= 100 ? 0 : 10
+  const total = subtotal + shippingCost
+
+  const stripe = useStripe()
+  const elements = useElements()
 
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -64,17 +78,8 @@ export function CheckoutPage() {
     country: '',
   })
 
-  const [payment, setPayment] = useState<PaymentForm>({
-    cardholderName: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvc: '',
-  })
-
   const [shippingErrors, setShippingErrors] = useState<Partial<ShippingForm>>({})
-  const [paymentErrors, setPaymentErrors] = useState<Partial<PaymentForm>>({})
 
-  // Pre-fill from saved billing address
   useEffect(() => {
     getProfile().then((p) => {
       setShipping((prev) => ({
@@ -89,7 +94,7 @@ export function CheckoutPage() {
     }).catch(() => {})
   }, [])
 
-  // Hidden dev hotkey: Shift+Alt+F — fills the entire form with test data
+  // Hidden dev hotkey: Shift+Alt+F — fills shipping form with test data
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.shiftKey && e.altKey && e.code === 'KeyF') {
@@ -102,31 +107,13 @@ export function CheckoutPage() {
           postalCode: '3129',
           country: 'Australia',
         })
-        setPayment({
-          cardholderName: 'TEDDY YEE',
-          cardNumber: '1234 5678 9012 3456',
-          cardExpiry: '08/34',
-          cardCvc: '123',
-        })
         setShippingErrors({})
-        setPaymentErrors({})
         setStep(0)
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
-
-  if (items.length === 0) {
-    return (
-      <PageLayout>
-        <div className="max-w-xl mx-auto px-4 py-24 text-center">
-          <p className="text-xl font-[var(--font-serif)] text-[var(--color-text)] mb-4">Your cart is empty</p>
-          <Link to="/coffee"><Button variant="primary">Shop Coffee</Button></Link>
-        </div>
-      </PageLayout>
-    )
-  }
 
   // ---- Validation ----
 
@@ -142,23 +129,11 @@ export function CheckoutPage() {
     return Object.keys(errs).length === 0
   }
 
-  function validatePayment(): boolean {
-    const errs: Partial<PaymentForm> = {}
-    const digits = payment.cardNumber.replace(/\s/g, '')
-    if (!payment.cardholderName.trim()) errs.cardholderName = 'Required'
-    if (digits.length < 13) errs.cardNumber = 'Invalid card number'
-    if (!/^\d{2}\/\d{2}$/.test(payment.cardExpiry)) errs.cardExpiry = 'MM/YY format'
-    if (payment.cardCvc.length < 3) errs.cardCvc = 'Invalid CVC'
-    setPaymentErrors(errs)
-    return Object.keys(errs).length === 0
-  }
-
   // ---- Navigation ----
 
   function handleNext() {
     setError(null)
     if (step === 0 && !validateShipping()) return
-    if (step === 1 && !validatePayment()) return
     setStep((s) => s + 1)
   }
 
@@ -170,9 +145,36 @@ export function CheckoutPage() {
   // ---- Submit ----
 
   async function handlePlaceOrder() {
+    if (!stripe || !elements) return
     setSubmitting(true)
     setError(null)
+
     try {
+      // 1. Create PaymentIntent on the server
+      const { clientSecret } = await createPaymentIntent(Math.round(total * 100))
+
+      // 2. Confirm card payment via Stripe
+      const cardElement = elements.getElement(CardElement)
+      if (!cardElement) throw new Error('Card element unavailable.')
+
+      const { paymentIntent, error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardElement,
+          billing_details: { name: `${shipping.firstName} ${shipping.lastName}` },
+        },
+      })
+
+      if (stripeError) {
+        setError(stripeError.message ?? 'Payment failed. Please try again.')
+        return
+      }
+
+      if (!paymentIntent || paymentIntent.status !== 'succeeded') {
+        setError('Payment was not completed. Please try again.')
+        return
+      }
+
+      // 3. Create order — backend verifies the PaymentIntent with Stripe
       const order = await createOrder({
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
         shippingAddress: {
@@ -184,13 +186,9 @@ export function CheckoutPage() {
           postalCode: shipping.postalCode,
           country: shipping.country,
         },
-        payment: {
-          cardholderName: payment.cardholderName,
-          cardNumber: payment.cardNumber.replace(/\s/g, ''),
-          cardExpiry: payment.cardExpiry,
-          cardCvc: payment.cardCvc,
-        },
+        payment: { paymentIntentId: paymentIntent.id },
       })
+
       clearCart()
       navigate(`/order-confirmation/${order.id}`)
     } catch (err) {
@@ -223,22 +221,17 @@ export function CheckoutPage() {
                 }}
               />
             )}
-            {step === 1 && (
-              <PaymentStep
-                values={payment}
-                errors={paymentErrors}
-                onChange={(field, value) => {
-                  setPayment((p) => ({ ...p, [field]: value }))
-                  setPaymentErrors((e) => ({ ...e, [field]: undefined }))
-                }}
-              />
-            )}
+
+            {/* CardElement stays mounted through all steps so it remains accessible on Place Order */}
+            <div style={{ display: step === 1 ? 'block' : 'none' }}>
+              <PaymentStep />
+            </div>
+
             {step === 2 && (
               <ReviewStep
                 shipping={shipping}
-                payment={payment}
                 subtotal={subtotal}
-                shippingCost={subtotal >= 100 ? 0 : 10}
+                shippingCost={shippingCost}
               />
             )}
 
@@ -267,9 +260,9 @@ export function CheckoutPage() {
                 <Button
                   variant="primary"
                   onClick={handlePlaceOrder}
-                  disabled={submitting}
+                  disabled={submitting || !stripe}
                 >
-                  {submitting ? 'Placing Order...' : 'Place Order'}
+                  {submitting ? 'Processing...' : 'Place Order'}
                 </Button>
               )}
             </div>
@@ -382,107 +375,75 @@ function ShippingStep({
   )
 }
 
-// ---- Step 2: Payment ----
+// ---- Step 2: Payment (Stripe Elements) ----
 
-function PaymentStep({
-  values,
-  errors,
-  onChange,
-}: {
-  values: PaymentForm
-  errors: Partial<PaymentForm>
-  onChange: (field: keyof PaymentForm, value: string) => void
-}) {
+function PaymentStep() {
+  const [copied, setCopied] = useState(false)
+
+  function handleUseTestCard() {
+    navigator.clipboard.writeText('4242424242424242').then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
-      <div className="flex items-start sm:items-center justify-between gap-2 mb-5 sm:mb-6">
+      <div className="flex items-center justify-between mb-5 sm:mb-6">
         <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)]">Payment Details</h2>
-        <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-elevated)] px-3 py-1.5 rounded-full shrink-0">
+        <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-elevated)] px-3 py-1.5 rounded-full">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
             <path d="M9 5V4C9 2.34 7.66 1 6 1C4.34 1 3 2.34 3 4V5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
             <rect x="1.5" y="5" width="9" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
           </svg>
-          Simulated
+          Stripe · Test Mode
         </span>
       </div>
 
-      {/* Card visual */}
-      <div className="relative h-36 sm:h-44 rounded-2xl bg-gradient-to-br from-[var(--color-brand-charcoal)] to-[#4a3728] p-4 sm:p-6 mb-5 sm:mb-6 overflow-hidden select-none">
-        <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-8 w-32 h-32 rounded-full bg-white/5 translate-y-1/2" />
-        <p className="font-mono text-white/90 tracking-wider sm:tracking-widest text-sm sm:text-lg mt-2 sm:mt-4 truncate">
-          {values.cardNumber || '•••• •••• •••• ••••'}
+      <div className="p-4 border border-[var(--color-border)] rounded-xl bg-[var(--color-surface-elevated)] hover:border-[var(--color-text-subtle)] transition-colors duration-[250ms]">
+        <CardElement
+          options={{
+            hidePostalCode: true,
+            style: {
+              base: {
+                fontSize: '14px',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                color: '#2E2E2E',
+                '::placeholder': { color: '#B0A89C' },
+              },
+              invalid: { color: '#ef4444' },
+            },
+          }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-xs text-[var(--color-text-subtle)]">
+          Test card: <span className="font-mono">4242 4242 4242 4242</span> · any future date · any CVC
         </p>
-        <div className="flex items-end justify-between mt-3 sm:mt-5">
-          <div className="min-w-0 mr-4">
-            <p className="text-white/50 text-xs uppercase tracking-wider">Card Holder</p>
-            <p className="text-white font-medium text-sm mt-0.5 truncate">
-              {values.cardholderName || 'Your Name'}
-            </p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-white/50 text-xs uppercase tracking-wider">Expires</p>
-            <p className="text-white font-medium text-sm mt-0.5">{values.cardExpiry || 'MM/YY'}</p>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={handleUseTestCard}
+          className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors duration-[250ms] shrink-0 ml-4"
+        >
+          {copied ? (
+            <>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2 6L4.5 8.5L10 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Copied!
+            </>
+          ) : (
+            <>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <rect x="4" y="1" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M1 4H3.5V11H8.5V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Use test card
+            </>
+          )}
+        </button>
       </div>
-
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
-            Cardholder Name <span className="text-red-500">*</span>
-          </label>
-          <Input
-            value={values.cardholderName}
-            onChange={(e) => onChange('cardholderName', e.target.value.toUpperCase())}
-            placeholder="TARO YAMAMOTO"
-          />
-          {errors.cardholderName && <p className="text-xs text-red-500 mt-1">{errors.cardholderName}</p>}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
-            Card Number <span className="text-red-500">*</span>
-          </label>
-          <Input
-            value={values.cardNumber}
-            onChange={(e) => onChange('cardNumber', formatCardNumber(e.target.value))}
-            placeholder="1234 5678 9012 3456"
-            maxLength={19}
-            className="font-mono tracking-widest"
-          />
-          {errors.cardNumber && <p className="text-xs text-red-500 mt-1">{errors.cardNumber}</p>}
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
-              Expiry Date <span className="text-red-500">*</span>
-            </label>
-            <Input
-              value={values.cardExpiry}
-              onChange={(e) => onChange('cardExpiry', formatExpiry(e.target.value))}
-              placeholder="MM/YY"
-              maxLength={5}
-            />
-            {errors.cardExpiry && <p className="text-xs text-red-500 mt-1">{errors.cardExpiry}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
-              CVC <span className="text-red-500">*</span>
-            </label>
-            <Input
-              value={values.cardCvc}
-              onChange={(e) => onChange('cardCvc', e.target.value.replace(/\D/g, '').slice(0, 4))}
-              placeholder="123"
-              maxLength={4}
-            />
-            {errors.cardCvc && <p className="text-xs text-red-500 mt-1">{errors.cardCvc}</p>}
-          </div>
-        </div>
-      </div>
-
-      <p className="text-xs text-[var(--color-text-subtle)] mt-5">
-        This is a demo. No real transaction will be processed.
-      </p>
     </div>
   )
 }
@@ -491,12 +452,10 @@ function PaymentStep({
 
 function ReviewStep({
   shipping,
-  payment,
   subtotal,
   shippingCost,
 }: {
   shipping: ShippingForm
-  payment: PaymentForm
   subtotal: number
   shippingCost: number
 }) {
@@ -514,21 +473,29 @@ function ReviewStep({
 
       <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[var(--shadow-soft)] border border-[var(--color-border-subtle)]">
         <h2 className="font-[var(--font-serif)] text-xl text-[var(--color-text)] mb-4">Payment</h2>
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3">
           <div className="w-10 h-7 rounded bg-[var(--color-brand-charcoal)] flex items-center justify-center shrink-0">
             <span className="text-white text-[10px] font-bold tracking-wider">CARD</span>
           </div>
-          <p className="text-[var(--color-text)] truncate">
-            {payment.cardholderName} &middot; ending in {payment.cardNumber.replace(/\s/g, '').slice(-4)}
-          </p>
+          <p className="text-[var(--color-text)] text-sm">Stripe card payment</p>
         </div>
       </div>
 
       <div className="bg-[var(--color-surface-elevated)] rounded-2xl p-4 sm:p-5 border border-[var(--color-border-subtle)]">
         <p className="text-sm text-[var(--color-text-muted)]">
-          By placing your order you agree to our (hypothetical) terms of service. This is a demo order and no real charge will occur.
+          By placing your order you agree to our (hypothetical) terms of service. Payment is processed securely via Stripe.
         </p>
-        <div className="flex justify-between mt-3 font-medium">
+        <div className="mt-3 space-y-1.5 text-sm">
+          <div className="flex justify-between text-[var(--color-text-muted)]">
+            <span>Subtotal</span>
+            <span>{formatCurrency(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-[var(--color-text-muted)]">
+            <span>Shipping</span>
+            <span>{shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}</span>
+          </div>
+        </div>
+        <div className="flex justify-between mt-3 pt-3 border-t border-[var(--color-border-subtle)] font-medium">
           <span className="text-[var(--color-text)]">Total charged</span>
           <span className="text-[var(--color-primary)] text-lg">{formatCurrency(subtotal + shippingCost)}</span>
         </div>
