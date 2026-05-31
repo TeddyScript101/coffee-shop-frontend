@@ -70,6 +70,7 @@ jobs:
           ASPNETCORE_ENVIRONMENT: Development
           ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
           Jwt__Key: ${{ secrets.JWT_KEY }}
+          Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
           # RabbitMQ:Host intentionally not set — backend falls back to in-memory transport
         run: |
           dotnet run -c Release --no-build --project CoffeeShopApi.csproj > /tmp/backend.log 2>&1 &
@@ -90,6 +91,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
+        env:
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
         run: npm run test:e2e
 
       - name: Upload Playwright report
