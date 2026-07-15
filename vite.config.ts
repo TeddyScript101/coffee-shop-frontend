@@ -17,7 +17,7 @@ export default defineConfig({
         rewrite: () => '/health',
       },
       '/api': {
-        target: 'https://dotnetcoffeeshopbackend.onrender.com',
+        target: 'http://localhost:5046',
         changeOrigin: true,
       },
     },
