@@ -10,6 +10,7 @@ import { useEquipments } from '@hooks/useEquipments'
 import { formatCurrency } from '@/utils/formatCurrency'
 import type { CoffeeBeanDto, EquipmentDto } from '@/types/api'
 import { cn } from '@/utils/cn'
+import { toWebp } from '@/utils/toWebp'
 
 type Tab = 'coffee' | 'equipment'
 
@@ -122,7 +123,10 @@ export function AdminProductsPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             {eq.imageUrl && (
-                              <img src={eq.imageUrl} alt={eq.name} className="w-10 h-10 rounded-lg object-cover bg-[var(--color-surface-elevated)]" />
+                              <picture>
+                                <source srcSet={toWebp(eq.imageUrl)} type="image/webp" />
+                                <img src={eq.imageUrl} alt={eq.name} loading="lazy" className="w-10 h-10 rounded-lg object-cover bg-[var(--color-surface-elevated)]" />
+                              </picture>
                             )}
                             <div>
                               <p className="text-sm font-medium text-[var(--color-text)]">{eq.name}</p>

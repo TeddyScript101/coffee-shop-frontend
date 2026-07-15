@@ -1,4 +1,5 @@
 import { cn } from '@/utils/cn'
+import { toWebp } from '@/utils/toWebp'
 import type { ProductType } from '@/types/api'
 
 export interface ProductThumbnailProps {
@@ -96,11 +97,15 @@ export function ProductThumbnail({
   // Equipment has real photos — show them when available
   if (imageUrl) {
     return (
-      <img
-        src={imageUrl}
-        alt={name}
-        className={cn('w-full h-full object-cover', className)}
-      />
+      <picture>
+        <source srcSet={toWebp(imageUrl)} type="image/webp" />
+        <img
+          src={imageUrl}
+          alt={name}
+          loading="lazy"
+          className={cn('w-full h-full object-cover', className)}
+        />
+      </picture>
     )
   }
 

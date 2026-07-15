@@ -12,6 +12,7 @@ import { Separator } from '@ds/components/Separator/Separator'
 import { useProduct } from '@hooks/useProduct'
 import { useCartStore } from '@store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { toWebp } from '@/utils/toWebp'
 import type { CoffeeBeanDto, EquipmentDto } from '@/types/api'
 
 function isCoffeeBean(p: CoffeeBeanDto | EquipmentDto): p is CoffeeBeanDto {
@@ -69,12 +70,15 @@ export function ProductDetailPage() {
               ) : (
                 <>
                   {product.imageUrl && (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className={`w-full h-full object-cover transition-opacity duration-[350ms] ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                      onLoad={() => setImageLoaded(true)}
-                    />
+                    <picture>
+                      <source srcSet={toWebp(product.imageUrl)} type="image/webp" />
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className={`w-full h-full object-cover transition-opacity duration-[350ms] ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setImageLoaded(true)}
+                      />
+                    </picture>
                   )}
                   {!imageLoaded && <div className="absolute inset-0 skeleton-shimmer" />}
                 </>

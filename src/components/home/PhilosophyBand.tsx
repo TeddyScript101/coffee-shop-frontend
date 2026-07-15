@@ -1,18 +1,42 @@
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 export function PhilosophyBand() {
+  const sectionRef = useRef<HTMLElement>(null)
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
+
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadVideo(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <section className="relative overflow-hidden bg-[var(--color-brand-charcoal)]">
-      {/* Video Background */}
+    <section ref={sectionRef} className="relative overflow-hidden bg-[var(--color-brand-charcoal)]">
+      {/* Video Background — deferred until the section nears the viewport */}
       <div className="absolute inset-0 pointer-events-none">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          src="/philosophy_bg.mp4"
-          className="w-full h-full object-cover opacity-75"
-        />
+        {shouldLoadVideo && (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            src="/philosophy_bg.mp4"
+            className="w-full h-full object-cover opacity-75"
+          />
+        )}
       </div>
 
       <div className="relative py-32 px-4 sm:px-6 lg:px-8 text-center max-w-3xl mx-auto">

@@ -7,6 +7,7 @@ import { useCartStore } from '@store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
 import type { EquipmentDto } from '@/types/api'
 import { cn } from '@/utils/cn'
+import { toWebp } from '@/utils/toWebp'
 
 interface EquipmentCardProps {
   equipment: EquipmentDto
@@ -40,17 +41,20 @@ export function EquipmentCard({ equipment, className }: EquipmentCardProps) {
       <Link to={`/product/${equipment.id}`} className="flex flex-col flex-1">
         <div className="relative aspect-square overflow-hidden bg-[var(--color-surface-elevated)]">
           {equipment.imageUrl && (
-            <img
-              src={equipment.imageUrl}
-              alt={equipment.name}
-              loading="lazy"
-              onLoad={() => setImageLoaded(true)}
-              className={cn(
-                'w-full h-full object-cover transition-all duration-[350ms]',
-                'group-hover:scale-[1.03]',
-                imageLoaded ? 'opacity-100' : 'opacity-0',
-              )}
-            />
+            <picture>
+              <source srcSet={toWebp(equipment.imageUrl)} type="image/webp" />
+              <img
+                src={equipment.imageUrl}
+                alt={equipment.name}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
+                className={cn(
+                  'w-full h-full object-cover transition-all duration-[350ms]',
+                  'group-hover:scale-[1.03]',
+                  imageLoaded ? 'opacity-100' : 'opacity-0',
+                )}
+              />
+            </picture>
           )}
           {!imageLoaded && (
             <div className="absolute inset-0 skeleton-shimmer" />
