@@ -5,6 +5,8 @@ export default defineConfig({
   // Run tests sequentially — they share backend state
   fullyParallel: false,
   workers: 1,
+  // Checkout tests (Stripe iframe + order creation) can exceed the 30s default
+  timeout: 60_000,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 2 : 0,
   reporter: [['html', { open: 'never' }]],
